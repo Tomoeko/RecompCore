@@ -1,7 +1,4 @@
-<!--
-  Banner goes here once docs/media/banner.png exists:
-  <p align="center"><img src="docs/media/banner.png" alt="RecompCore" width="640"></p>
--->
+<p align="center"><img src="docs/media/banner.png" alt="RecompCore — a static-recompilation CPU core for Dolphin" width="640"></p>
 
 # RecompCore
 
