@@ -45,6 +45,20 @@ static void signal_handler(int)
   s_platform->RequestShutdown();
 }
 
+#ifndef _WIN32
+// nogui has no hotkey scheduler; signals are the external savestate trigger
+// (slot 1). The handlers only set atomic flags, consumed by the platform loop.
+static void save_state_signal_handler(int)
+{
+  s_platform->RequestSaveState();
+}
+
+static void load_state_signal_handler(int)
+{
+  s_platform->RequestLoadState();
+}
+#endif
+
 std::vector<std::string> Host_GetPreferredLocales()
 {
   return {};
@@ -299,6 +313,15 @@ int main(const int argc, char* argv[])
   sa.sa_flags = SA_RESTART | SA_RESETHAND;
   sigaction(SIGINT, &sa, nullptr);
   sigaction(SIGTERM, &sa, nullptr);
+
+  // Savestate triggers (repeatable, so no SA_RESETHAND).
+  struct sigaction sa_state;
+  sigemptyset(&sa_state.sa_mask);
+  sa_state.sa_flags = SA_RESTART;
+  sa_state.sa_handler = save_state_signal_handler;
+  sigaction(SIGUSR1, &sa_state, nullptr);
+  sa_state.sa_handler = load_state_signal_handler;
+  sigaction(SIGUSR2, &sa_state, nullptr);
 #endif
 
   DolphinAnalytics::Instance().ReportDolphinStart("nogui");

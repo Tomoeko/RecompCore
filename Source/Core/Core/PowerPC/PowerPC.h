@@ -38,6 +38,8 @@ enum class CPUCore
   JIT64 = 1,
   JITARM64 = 4,
   CachedInterpreter = 5,
+  // dolphin-chassis: statically recompiled per-game native module + interpreter fallback.
+  StaticRecomp = 6,
 };
 
 enum class CoreMode

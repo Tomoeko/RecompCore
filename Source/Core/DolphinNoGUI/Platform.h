@@ -27,6 +27,11 @@ public:
   // Requests a graceful shutdown, from SIGINT/SIGTERM.
   void RequestShutdown();
 
+  // Requests a slot-1 savestate save/load, from SIGUSR1/SIGUSR2 (nogui has no
+  // hotkey scheduler, so signals are the external savestate trigger).
+  void RequestSaveState();
+  void RequestLoadState();
+
   // Request an immediate shutdown.
   void Stop();
 
@@ -53,6 +58,8 @@ protected:
   Common::Flag m_running{true};
   Common::Flag m_shutdown_requested{false};
   Common::Flag m_tried_graceful_shutdown{false};
+  Common::Flag m_save_state_requested{false};
+  Common::Flag m_load_state_requested{false};
 
   bool m_window_focus = true;  // Should be made atomic if actually implemented
   bool m_window_fullscreen = false;

@@ -3,9 +3,12 @@
 
 #include "DolphinNoGUI/Platform.h"
 
+#include <cstdio>
+
 #include "Core/HW/ProcessorInterface.h"
 #include "Core/IOS/IOS.h"
 #include "Core/IOS/STM/STM.h"
+#include "Core/State.h"
 #include "Core/System.h"
 
 Platform::~Platform() = default;
@@ -21,6 +24,16 @@ void Platform::SetTitle(const std::string& title)
 
 void Platform::UpdateRunningFlag()
 {
+  if (m_save_state_requested.TestAndClear())
+  {
+    std::fprintf(stderr, "[nogui] SIGUSR1: saving state to slot 1\n");
+    State::Save(Core::System::GetInstance(), 1);
+  }
+  if (m_load_state_requested.TestAndClear())
+  {
+    std::fprintf(stderr, "[nogui] SIGUSR2: loading state from slot 1\n");
+    State::Load(Core::System::GetInstance(), 1);
+  }
   if (m_shutdown_requested.TestAndClear())
   {
     const auto& system = Core::System::GetInstance();
@@ -47,4 +60,14 @@ void Platform::Stop()
 void Platform::RequestShutdown()
 {
   m_shutdown_requested.Set();
+}
+
+void Platform::RequestSaveState()
+{
+  m_save_state_requested.Set();
+}
+
+void Platform::RequestLoadState()
+{
+  m_load_state_requested.Set();
 }

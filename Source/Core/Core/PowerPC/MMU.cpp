@@ -53,6 +53,7 @@
 #include "Core/PowerPC/GDBStub.h"
 #include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/PowerPC/StaticRecomp/StaticRecompLockstep.h"
 #include "Core/System.h"
 
 #include "VideoCommon/EFBInterface.h"
@@ -232,6 +233,13 @@ T MMU::ReadFromHardware(u32 em_address)
 
   if (flag == XCheckTLBFlag::Read && (em_address & 0xF8000000) == 0x08000000)
   {
+    // StaticRecomp lockstep: replay native's recorded read instead of touching
+    // hardware, so the shadow sees identical MMIO inputs (no drift/side effect).
+    if (StaticRecompLockstep::g_hw_read_sink)
+    {
+      return static_cast<T>(StaticRecompLockstep::g_hw_read_sink(
+          em_address, sizeof(T), StaticRecompLockstep::g_hw_read_sink_user));
+    }
     if (em_address < 0x0c000000)
     {
       return EFB_Read(em_address);
@@ -357,6 +365,29 @@ void MMU::WriteToHardware(u32 em_address, const u32 data, const u32 size)
     wi = translated_addr.wi;
   }
 
+  // StaticRecomp lockstep: while an interpreter shadow re-run is in progress,
+  // capture and SUPPRESS hardware (MMIO / gather-pipe) writes so we do not
+  // re-issue side effects Dolphin already performed for the native run (a
+  // second GX FIFO burst, a duplicate PI/VI register write). RAM/L1 writes fall
+  // through and commit normally; the harness restores RAM around the shadow.
+  // The sink is null outside a shadow (single predictable branch) and is never
+  // installed on module-less runs, so the game-agnostic invariant is untouched.
+  if constexpr (flag == XCheckTLBFlag::Write)
+  {
+    if (StaticRecompLockstep::g_hw_write_sink)
+    {
+      const bool is_gather =
+          (em_address & 0xFFFFF000) == GPFifo::GATHER_PIPE_PHYSICAL_ADDRESS;
+      const bool is_mmio = (em_address & 0xF8000000) == 0x08000000;
+      if (is_gather || is_mmio)
+      {
+        StaticRecompLockstep::g_hw_write_sink(em_address, data, size,
+                                              StaticRecompLockstep::g_hw_write_sink_user);
+        return;
+      }
+    }
+  }
+
   // Check for a gather pipe write (which are not implemented through the MMIO system).
   //
   // Note that we must mask the address to correctly emulate certain games; Pac-Man World 3
@@ -429,6 +460,16 @@ void MMU::WriteToHardware(u32 em_address, const u32 data, const u32 size)
   if (m_memory.GetL1Cache() && (em_address >> 28 == 0xE) &&
       (em_address < (0xE0000000 + m_memory.GetL1CacheSize())))
   {
+    // StaticRecomp lockstep: record this L1Cache offset's pre-image so the shadow
+    // re-run's LC stores can be undone afterward (locked cache is memory, so the
+    // shadow commits normally but must not leak into the canonical native run).
+    // Null/no-op outside a shadow (module-less runs never set it).
+    if constexpr (flag == XCheckTLBFlag::Write)
+    {
+      if (StaticRecompLockstep::g_lc_write_journal)
+        StaticRecompLockstep::g_lc_write_journal(em_address & 0x0FFFFFFF, size,
+                                                 StaticRecompLockstep::g_lc_write_journal_user);
+    }
     std::memcpy(&m_memory.GetL1Cache()[em_address & 0x0FFFFFFF], &swapped_data, size);
     return;
   }
@@ -465,6 +506,16 @@ void MMU::WriteToHardware(u32 em_address, const u32 data, const u32 size)
     // mirrors of memory).
     em_address &= m_memory.GetRamMask();
 
+    // Lockstep: record this MEM1 offset's pre-image so the shadow re-run's RAM
+    // stores can be undone afterward (they must not leak into the canonical
+    // native run). Null/no-op outside a shadow.
+    if constexpr (flag == XCheckTLBFlag::Write)
+    {
+      if (StaticRecompLockstep::g_ram_write_journal)
+        StaticRecompLockstep::g_ram_write_journal(em_address, size,
+                                                  StaticRecompLockstep::g_ram_write_journal_user);
+    }
+
     if (m_ppc_state.m_enable_dcache && !wi)
       m_ppc_state.dCache.Write(m_memory, em_address, &swapped_data, size, HID0(m_ppc_state).DLOCK);
 
@@ -496,6 +547,17 @@ void MMU::WriteToHardware(u32 em_address, const u32 data, const u32 size)
   // [0x7E000000, 0x80000000).
   if (m_memory.GetFakeVMEM() && ((em_address & 0xFE000000) == 0x7E000000))
   {
+    // StaticRecomp lockstep: record this Fake-VMEM offset's pre-image so the
+    // shadow re-run reads the block pre-image (correct RMW), not native's
+    // committed value, and so the shadow's own stores can be undone afterward.
+    // The guest VM window lives here, not MEM1, so it needs its own journal.
+    // Null/no-op outside a shadow (module-less runs never set it).
+    if constexpr (flag == XCheckTLBFlag::Write)
+    {
+      if (StaticRecompLockstep::g_vmem_write_journal)
+        StaticRecompLockstep::g_vmem_write_journal(em_address & m_memory.GetFakeVMemMask(), size,
+                                                   StaticRecompLockstep::g_vmem_write_journal_user);
+    }
     std::memcpy(&m_memory.GetFakeVMEM()[em_address & m_memory.GetFakeVMemMask()], &swapped_data,
                 size);
     return;

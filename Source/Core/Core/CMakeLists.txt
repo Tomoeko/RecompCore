@@ -555,6 +555,9 @@ add_library(core
   PowerPC/MMU.h
   PowerPC/PowerPC.cpp
   PowerPC/PowerPC.h
+  PowerPC/StaticRecomp/StaticRecompABI.h
+  PowerPC/StaticRecomp/StaticRecompCore.cpp
+  PowerPC/StaticRecomp/StaticRecompCore.h
   PowerPC/PPCAnalyst.cpp
   PowerPC/PPCAnalyst.h
   PowerPC/PPCCache.cpp

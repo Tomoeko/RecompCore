@@ -235,6 +235,7 @@ std::span<const CPUCore> AvailableCPUCores()
 #endif
       CPUCore::CachedInterpreter,
       CPUCore::Interpreter,
+      CPUCore::StaticRecomp,
   };
 
   return cpu_cores;
