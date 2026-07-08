@@ -7,7 +7,7 @@ on:
 
 jobs:
   nogui-macos:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,7 +20,7 @@ jobs:
         run: ninja -C build dolphin-emu-nogui
 
   nogui-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
