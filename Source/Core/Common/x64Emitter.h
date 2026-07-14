@@ -119,6 +119,9 @@ public:
   // Save energy in wait-loops on P4 only. Probably not too useful.
   void PAUSE();
 
+  // Read Time-Stamp Counter
+  void RDTSC();
+
   // Flag control
   void STC();
   void CLC();
@@ -179,8 +182,7 @@ public:
   void FSOverride();
   void GSOverride();
 
-  // SSE/SSE2: Floating point arithmetic
-  void RDTSC();
+
 
   // Utility functions
   // The difference between this and CALL is that this aligns the stack

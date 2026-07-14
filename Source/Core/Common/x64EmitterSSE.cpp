@@ -38,7 +38,7 @@ namespace Gen
     WriteSSEOp(0x66, op, dest, arg); \
   }
 
-// MOVDQA/MOVDQU moved from x64EmitterGPRMisc.cpp
+// MOVDQA/MOVDQU moved from x64EmitterGPR.cpp
 void XEmitter::MOVDQA(X64Reg regOp, const OpArg& arg)
 {
   WriteSSEOp(0x66, sseMOVDQfromRM, regOp, arg);
@@ -57,16 +57,6 @@ void XEmitter::MOVDQU(X64Reg regOp, const OpArg& arg)
 void XEmitter::MOVDQU(const OpArg& arg, X64Reg regOp)
 {
   WriteSSEOp(0xF3, sseMOVDQtoRM, regOp, arg);
-}
-
-void XEmitter::PREFETCH(PrefetchLevel level, OpArg arg)
-{
-  ASSERT_MSG(DYNA_REC, !arg.IsImm(), "PREFETCH - Imm argument");
-  arg.operandReg = static_cast<u8>(level);
-  arg.WriteREX(this, 0, 0);
-  Write8(0x0F);
-  Write8(0x18);
-  arg.WriteRest(this);
 }
 
 void XEmitter::WriteSSEOp(u8 opPrefix, u16 op, X64Reg regOp, OpArg arg, int extrabytes)

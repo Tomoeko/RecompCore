@@ -364,4 +364,35 @@ void XEmitter::POP(int /*bits*/, const OpArg& reg)
     ASSERT_MSG(DYNA_REC, 0, "POP - Unsupported encoding");
 }
 
+void XEmitter::LOCK()
+{
+  Write8(0xF0);
+}
+
+void XEmitter::REP()
+{
+  Write8(0xF3);
+}
+
+void XEmitter::REPNE()
+{
+  Write8(0xF2);
+}
+
+void XEmitter::FSOverride()
+{
+  Write8(0x64);
+}
+
+void XEmitter::GSOverride()
+{
+  Write8(0x65);
+}
+
+void XEmitter::RDTSC()
+{
+  Write8(0x0F);
+  Write8(0x31);
+}
+
 }  // namespace Gen

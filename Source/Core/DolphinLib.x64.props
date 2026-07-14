@@ -33,10 +33,9 @@
     <ClCompile Include="Common\x64ABI.cpp" />
     <ClCompile Include="Common\x64CPUDetect.cpp" />
     <ClCompile Include="Common\x64Emitter.cpp" />
-    <ClCompile Include="Common\x64EmitterArithmetic.cpp" />
+    <ClCompile Include="Common\x64EmitterGPR.cpp" />
     <ClCompile Include="Common\x64EmitterAVX.cpp" />
     <ClCompile Include="Common\x64EmitterBranch.cpp" />
-    <ClCompile Include="Common\x64EmitterGPRMisc.cpp" />
     <ClCompile Include="Common\x64EmitterOpArg.cpp" />
     <ClCompile Include="Common\x64EmitterSSE.cpp" />
     <ClCompile Include="Common\x64FPURoundMode.cpp" />

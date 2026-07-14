@@ -272,12 +272,11 @@ else()
       x64ABI.h
       x64Emitter.cpp
       x64Emitter.h
-      x64EmitterArithmetic.cpp
+      x64EmitterGPR.cpp
       x64EmitterAVX.cpp
       x64EmitterAVX.h
       x64EmitterBranch.cpp
       x64EmitterGPR.h
-      x64EmitterGPRMisc.cpp
       x64EmitterOpArg.cpp
       x64EmitterSSE.h
       x64EmitterSSE.cpp
