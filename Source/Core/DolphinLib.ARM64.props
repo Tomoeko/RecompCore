@@ -2,6 +2,8 @@
 <Project>
   <ItemGroup>
     <ClInclude Include="Common\Arm64Emitter.h" />
+    <ClInclude Include="Common\Arm64EmitterTypes.h" />
+    <ClInclude Include="Common\Arm64FloatEmitter.h" />
     <ClInclude Include="Common\ArmCommon.h" />
     <ClInclude Include="Core\PowerPC\JitArm64\Jit_Util.h" />
     <ClInclude Include="Core\PowerPC\JitArm64\Jit.h" />
@@ -12,6 +14,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\Arm64Emitter.cpp" />
+    <ClCompile Include="Common\Arm64EmitterABI.cpp" />
+    <ClCompile Include="Common\Arm64EmitterArithmetic.cpp" />
+    <ClCompile Include="Common\Arm64EmitterLoadStore.cpp" />
+    <ClCompile Include="Common\Arm64FloatEmitter.cpp" />
     <ClCompile Include="Common\ArmCPUDetect.cpp" />
     <ClCompile Include="Common\ArmFPURoundMode.cpp" />
     <ClCompile Include="Core\PowerPC\JitArm64\Jit_Util.cpp" />

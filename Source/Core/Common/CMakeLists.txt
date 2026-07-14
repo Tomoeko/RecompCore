@@ -254,7 +254,13 @@ endif()
 if(_M_ARM_64)
   target_sources(common PRIVATE
     Arm64Emitter.cpp
+    Arm64EmitterABI.cpp
+    Arm64EmitterArithmetic.cpp
+    Arm64EmitterLoadStore.cpp
+    Arm64FloatEmitter.cpp
     Arm64Emitter.h
+    Arm64EmitterTypes.h
+    Arm64FloatEmitter.h
     ArmCommon.h
     ArmCPUDetect.cpp
     ArmFPURoundMode.cpp
