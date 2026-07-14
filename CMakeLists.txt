@@ -33,6 +33,14 @@ if (MSVC)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+set(TARGET_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+  set(TARGET_ARCH "${CMAKE_OSX_ARCHITECTURES}")
+endif()
+message(STATUS "DIAGNOSTIC: CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "DIAGNOSTIC: CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
+message(STATUS "DIAGNOSTIC: TARGET_ARCH=${TARGET_ARCH}")
+
 set(COMPILER ${CMAKE_CXX_COMPILER_ID})
 if (COMPILER STREQUAL "GNU")
   set(COMPILER "GCC") # prefer printing GCC instead of GNU
@@ -216,18 +224,18 @@ if(ENABLE_GENERIC)
   message(STATUS "Warning! Building generic build!")
   set(_M_GENERIC 1)
   add_definitions(-D_M_GENERIC=1)
-elseif(_ARCH_64 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x64|x86_64|amd64|AMD64")
+elseif(_ARCH_64 AND TARGET_ARCH MATCHES "x64|x86_64|amd64|AMD64")
   set(_M_X86_64 1)
   add_definitions(-D_M_X86_64=1)
   check_and_add_flag(HAVE_SSE2 -msse2)
-elseif(_ARCH_64 AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
+elseif(_ARCH_64 AND TARGET_ARCH MATCHES "aarch64|arm64|ARM64")
   set(_M_ARM_64 1)
   add_definitions(-D_M_ARM_64=1)
   # CRC instruction set is used in the CRC32 hash function
   check_and_add_flag(HAVE_ARCH_ARMV8 -march=armv8-a+crc)
 else()
   message(FATAL_ERROR "You're building on an unsupported platform: "
-      "'${CMAKE_SYSTEM_PROCESSOR}' with ${CMAKE_SIZEOF_VOID_P}-byte pointers."
+      "'${TARGET_ARCH}' with ${CMAKE_SIZEOF_VOID_P}-byte pointers."
       " Enable generic build if you really want a JIT-less binary.")
 endif()
 

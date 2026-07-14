@@ -3,6 +3,10 @@
   <ItemGroup>
     <ClInclude Include="Common\x64ABI.h" />
     <ClInclude Include="Common\x64Emitter.h" />
+    <ClInclude Include="Common\x64EmitterAVX.h" />
+    <ClInclude Include="Common\x64EmitterGPR.h" />
+    <ClInclude Include="Common\x64EmitterSSE.h" />
+    <ClInclude Include="Common\x64EmitterTypes.h" />
     <ClInclude Include="Common\x64Reg.h" />
     <ClInclude Include="Core\DSP\Jit\x64\DSPEmitter.h" />
     <ClInclude Include="Core\DSP\Jit\x64\DSPJitRegCache.h" />
@@ -29,6 +33,11 @@
     <ClCompile Include="Common\x64ABI.cpp" />
     <ClCompile Include="Common\x64CPUDetect.cpp" />
     <ClCompile Include="Common\x64Emitter.cpp" />
+    <ClCompile Include="Common\x64EmitterArithmetic.cpp" />
+    <ClCompile Include="Common\x64EmitterAVX.cpp" />
+    <ClCompile Include="Common\x64EmitterGPRMisc.cpp" />
+    <ClCompile Include="Common\x64EmitterSSEFloat.cpp" />
+    <ClCompile Include="Common\x64EmitterSSEInteger.cpp" />
     <ClCompile Include="Common\x64FPURoundMode.cpp" />
     <ClCompile Include="Core\DSP\Jit\x64\DSPEmitter.cpp" />
     <ClCompile Include="Core\DSP\Jit\x64\DSPJitArithmetic.cpp" />

@@ -170,7 +170,7 @@ add_library(common
 
 add_dependencies(common dolphin_scmrev)
 
-if(NOT MSVC AND _M_ARM_64)
+if(NOT MSVC AND _M_ARM_64 AND NOT CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
   set_source_files_properties(
     Crypto/AES.cpp
     Crypto/SHA1.cpp
@@ -272,6 +272,15 @@ else()
       x64ABI.h
       x64Emitter.cpp
       x64Emitter.h
+      x64EmitterArithmetic.cpp
+      x64EmitterAVX.cpp
+      x64EmitterAVX.h
+      x64EmitterGPR.h
+      x64EmitterGPRMisc.cpp
+      x64EmitterSSE.h
+      x64EmitterSSEFloat.cpp
+      x64EmitterSSEInteger.cpp
+      x64EmitterTypes.h
       x64FPURoundMode.cpp
       x64CPUDetect.cpp
       x64Reg.h
