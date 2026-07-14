@@ -270,19 +270,19 @@ else()
     target_sources(common PRIVATE
       x64ABI.cpp
       x64ABI.h
+      x64CPUDetect.cpp
       x64Emitter.cpp
       x64Emitter.h
-      x64EmitterGPR.cpp
       x64EmitterAVX.cpp
       x64EmitterAVX.h
       x64EmitterBranch.cpp
+      x64EmitterGPR.cpp
       x64EmitterGPR.h
       x64EmitterOpArg.cpp
-      x64EmitterSSE.h
       x64EmitterSSE.cpp
+      x64EmitterSSE.h
       x64EmitterTypes.h
       x64FPURoundMode.cpp
-      x64CPUDetect.cpp
       x64Reg.h
     )
   else() # Generic
