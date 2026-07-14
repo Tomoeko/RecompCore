@@ -101,6 +101,32 @@ else
   MODULE_STATUS="${YELLOW}SKIPPED (directory not found)${NC}"
 fi
 
+# 5. x64 Emitter Unit Tests
+echo -e "\n${BLUE}[5/5] Building and running x64 Emitter Unit Tests...${NC}"
+X64_STATUS="Skipped"
+if [ "$(uname)" = "Darwin" ]; then
+  mkdir -p build_x64_test
+  if cmake -S . -B build_x64_test -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_LIBS=OFF >/dev/null 2>&1; then
+    if cmake --build build_x64_test --target x64EmitterTestStandalone -j"$NCPU" >/dev/null 2>&1; then
+      if ./build_x64_test/Binaries/Tests/x64EmitterTestStandalone; then
+        X64_STATUS="${GREEN}PASSED${NC}"
+      else
+        X64_STATUS="${RED}FAILED (test execution failed)${NC}"
+        FAILED=1
+      fi
+    else
+      X64_STATUS="${RED}FAILED (build failed)${NC}"
+      FAILED=1
+    fi
+  else
+    X64_STATUS="${RED}FAILED (cmake configuration failed)${NC}"
+    FAILED=1
+  fi
+  rm -rf build_x64_test
+else
+  X64_STATUS="${YELLOW}SKIPPED (non-macOS host)${NC}"
+fi
+
 # Final Summary
 echo -e "\n${CYAN}=======================================================${NC}"
 echo -e "${CYAN}                    Test Result Summary                ${NC}"
@@ -109,6 +135,7 @@ echo -e "1. DolRecomp Compiler Tests:      $DOLRECOMP_STATUS"
 echo -e "2. GXRuntime Emulation Tests:     $GXRUNTIME_STATUS"
 echo -e "3. Chassis Core Unit Tests:       $CHASSIS_STATUS"
 echo -e "4. Static Recomp Module Build:    $MODULE_STATUS"
+echo -e "5. x64 Emitter Unit Tests:        $X64_STATUS"
 echo -e "${CYAN}=======================================================${NC}"
 
 if [ $FAILED -eq 0 ]; then

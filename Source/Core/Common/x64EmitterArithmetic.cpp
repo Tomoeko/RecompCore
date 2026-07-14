@@ -224,7 +224,18 @@ DEFINE_NORMAL_OP(OR, NormalOp::OR)
 
 DEFINE_NORMAL_OP(XOR, NormalOp::XOR)
 
-DEFINE_NORMAL_OP(MOV, NormalOp::MOV)
+void XEmitter::MOV(int bits, const OpArg& a1, const OpArg& a2)
+{
+  if (bits == 64 && a1.IsSimpleReg() &&
+      ((a2.scale == SCALE_IMM64 && a2.offset == static_cast<u32>(a2.offset)) ||
+       (a2.scale == SCALE_IMM32 && static_cast<s32>(a2.offset) >= 0)))
+  {
+    WriteNormalOp(32, NormalOp::MOV, a1, a2.AsImm32());
+    return;
+  }
+  CheckFlags();
+  WriteNormalOp(bits, NormalOp::MOV, a1, a2);
+}
 
 DEFINE_NORMAL_OP(TEST, NormalOp::TEST)
 

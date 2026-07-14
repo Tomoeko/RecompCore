@@ -275,8 +275,10 @@ else()
       x64EmitterArithmetic.cpp
       x64EmitterAVX.cpp
       x64EmitterAVX.h
+      x64EmitterBranch.cpp
       x64EmitterGPR.h
       x64EmitterGPRMisc.cpp
+      x64EmitterOpArg.cpp
       x64EmitterSSE.h
       x64EmitterSSEFloat.cpp
       x64EmitterSSEInteger.cpp

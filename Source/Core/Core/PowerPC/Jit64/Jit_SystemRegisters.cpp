@@ -23,6 +23,11 @@ static OpArg CROffset(int field)
   return PPCSTATE_CR(field);
 }
 
+static void DoICacheReset(PowerPC::PowerPCState& ppc_state, JitInterface& jit_interface)
+{
+  ppc_state.iCache.Reset(jit_interface);
+}
+
 void Jit64::mtspr(UGeckoInstruction inst)
 {
   INSTRUCTION_START
@@ -292,5 +297,3 @@ void Jit64::mftb(UGeckoInstruction inst)
   JITDISABLE(bJITSystemRegistersOff);
   mfspr(inst);
 }
-
-} // namespace Jit64

@@ -6,12 +6,11 @@
 #include "Common/CommonTypes.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
+#include "Common/CPUDetect.h"
 #include "Core/PowerPC/PowerPC.h"
 
 using namespace Gen;
 
-namespace Jit64
-{
 void Jit64::rlwinmx(UGeckoInstruction inst)
 {
   INSTRUCTION_START
@@ -366,125 +365,3 @@ void Jit64::slwx(UGeckoInstruction inst)
     ComputeRC(a, false, true);
 }
 
-void Jit64::srawx(UGeckoInstruction inst)
-{
-  INSTRUCTION_START
-  JITDISABLE(bJITIntegerOff);
-  int a = inst.RA, b = inst.RB, s = inst.RS;
-
-  if (gpr.IsImm(b))
-  {
-    u32 amount = gpr.Imm32(b) & 0x3f;
-    RCX64Reg Ra = gpr.Bind(a, RCMode::Write);
-    RCOpArg Rs = gpr.Use(s, RCMode::Read);
-    RegCache::Realize(Ra, Rs);
-
-    if (amount >= 32)
-      amount = 31;
-
-    if (a != s)
-      MOV(32, Ra, Rs);
-
-    if (amount == 0)
-    {
-      AND(32, PPCSTATE(xer_so_ov), Imm8(~XER_CA_MASK));
-    }
-    else
-    {
-      XOR(32, R(RSCRATCH), R(RSCRATCH));
-      BT(32, Ra, Imm8(amount - 1));
-      SETcc(CC_C, R(RSCRATCH));
-      TEST(32, Ra, Ra);
-      FixupBranch checkSO = J_CC(CC_NS);
-      SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-      OR(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-      FixupBranch exit = J();
-      SetJumpTarget(checkSO);
-      SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-      NOT(32, R(RSCRATCH));
-      AND(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-      SetJumpTarget(exit);
-
-      SAR(32, Ra, Imm8(amount));
-    }
-  }
-  else
-  {
-    RCX64Reg ecx = gpr.Scratch(ECX);
-    RCX64Reg Ra = gpr.Bind(a, RCMode::Write);
-    RCOpArg Rb = gpr.Use(b, RCMode::Read);
-    RCOpArg Rs = gpr.Use(s, RCMode::Read);
-    RegCache::Realize(ecx, Ra, Rb, Rs);
-
-    MOV(32, ecx, Rb);
-    if (a != s)
-      MOV(32, Ra, Rs);
-
-    TEST(32, ecx, Imm8(0x20));
-    FixupBranch j_not_big = J_CC(CC_Z);
-    MOV(32, ecx, Imm32(31));
-    SetJumpTarget(j_not_big);
-
-    XOR(32, R(RSCRATCH), R(RSCRATCH));
-    MOV(32, R(RSCRATCH2), R(ecx));
-    DEC(32, R(RSCRATCH2));
-    BT(32, Ra, R(RSCRATCH2));
-    SETcc(CC_C, R(RSCRATCH));
-    TEST(32, Ra, Ra);
-    FixupBranch checkSO = J_CC(CC_NS);
-    SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-    OR(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-    FixupBranch exit = J();
-    SetJumpTarget(checkSO);
-    SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-    NOT(32, R(RSCRATCH));
-    AND(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-    SetJumpTarget(exit);
-
-    SAR(32, Ra, ecx);
-  }
-  if (inst.Rc)
-    ComputeRC(a);
-}
-
-void Jit64::srawix(UGeckoInstruction inst)
-{
-  INSTRUCTION_START
-  JITDISABLE(bJITIntegerOff);
-  int a = inst.RA, s = inst.RS;
-  u32 amount = inst.SH;
-
-  RCX64Reg Ra = gpr.Bind(a, RCMode::Write);
-  RCOpArg Rs = gpr.Use(s, RCMode::Read);
-  RegCache::Realize(Ra, Rs);
-
-  if (a != s)
-    MOV(32, Ra, Rs);
-
-  if (amount == 0)
-  {
-    AND(32, PPCSTATE(xer_so_ov), Imm8(~XER_CA_MASK));
-  }
-  else
-  {
-    XOR(32, R(RSCRATCH), R(RSCRATCH));
-    BT(32, Ra, Imm8(amount - 1));
-    SETcc(CC_C, R(RSCRATCH));
-    TEST(32, Ra, Ra);
-    FixupBranch checkSO = J_CC(CC_NS);
-    SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-    OR(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-    FixupBranch exit = J();
-    SetJumpTarget(checkSO);
-    SHL(32, R(RSCRATCH), Imm8(XER_CA_SHIFT));
-    NOT(32, R(RSCRATCH));
-    AND(32, PPCSTATE(xer_so_ov), R(RSCRATCH));
-    SetJumpTarget(exit);
-
-    SAR(32, Ra, Imm8(amount));
-  }
-  if (inst.Rc)
-    ComputeRC(a);
-}
-
-}

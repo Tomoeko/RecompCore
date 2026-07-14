@@ -24,6 +24,13 @@ namespace Gen
     WriteFMA3Op(op, regOp1, regOp2, arg, W); \
   }
 
+#define DEFINE_AVX_CMP_SHUF_OP(name, prefix, op) \
+  void XEmitter::name(X64Reg regOp1, X64Reg regOp2, const OpArg& arg, u8 val) \
+  { \
+    WriteAVXOp(prefix, op, regOp1, regOp2, arg, 0, 1); \
+    Write8(val); \
+  }
+
 {
 
 
@@ -172,23 +179,9 @@ DEFINE_VEX_OP(VDIVPD, 0x66, sseDIV, 0)
 
 DEFINE_VEX_OP(VSQRTSD, 0xF2, sseSQRT, 0)
 
-void XEmitter::VCMPPD(X64Reg regOp1, X64Reg regOp2, const OpArg& arg, u8 compare)
-{
-  WriteAVXOp(0x66, sseCMP, regOp1, regOp2, arg, 0, 1);
-  Write8(compare);
-}
-
-void XEmitter::VSHUFPS(X64Reg regOp1, X64Reg regOp2, const OpArg& arg, u8 shuffle)
-{
-  WriteAVXOp(0x00, sseSHUF, regOp1, regOp2, arg, 0, 1);
-  Write8(shuffle);
-}
-
-void XEmitter::VSHUFPD(X64Reg regOp1, X64Reg regOp2, const OpArg& arg, u8 shuffle)
-{
-  WriteAVXOp(0x66, sseSHUF, regOp1, regOp2, arg, 0, 1);
-  Write8(shuffle);
-}
+DEFINE_AVX_CMP_SHUF_OP(VCMPPD, 0x66, sseCMP)
+DEFINE_AVX_CMP_SHUF_OP(VSHUFPS, 0x00, sseSHUF)
+DEFINE_AVX_CMP_SHUF_OP(VSHUFPD, 0x66, sseSHUF)
 
 DEFINE_VEX_OP(VUNPCKLPS, 0x00, 0x14, 0)
 

@@ -24,6 +24,13 @@ namespace Gen
     WriteSSEOp(prefix, op, regOp, arg); \
   }
 
+#define DEFINE_SSE_CMP_SHUF_OP(name, prefix, op) \
+  void XEmitter::name(X64Reg regOp, const OpArg& arg, u8 val) \
+  { \
+    WriteSSEOp(prefix, op, regOp, arg, 1); \
+    Write8(val); \
+  }
+
 {
 
 void XEmitter::PREFETCH(PrefetchLevel level, OpArg arg)
@@ -135,17 +142,8 @@ DEFINE_SSE_OP(SUBSS, 0xF3, sseSUB)
 
 DEFINE_SSE_OP(SUBSD, 0xF2, sseSUB)
 
-void XEmitter::CMPSS(X64Reg regOp, const OpArg& arg, u8 compare)
-{
-  WriteSSEOp(0xF3, sseCMP, regOp, arg, 1);
-  Write8(compare);
-}
-
-void XEmitter::CMPSD(X64Reg regOp, const OpArg& arg, u8 compare)
-{
-  WriteSSEOp(0xF2, sseCMP, regOp, arg, 1);
-  Write8(compare);
-}
+DEFINE_SSE_CMP_SHUF_OP(CMPSS, 0xF3, sseCMP)
+DEFINE_SSE_CMP_SHUF_OP(CMPSD, 0xF2, sseCMP)
 
 DEFINE_SSE_OP(MULSS, 0xF3, sseMUL)
 
@@ -179,17 +177,8 @@ DEFINE_SSE_OP(SUBPS, 0x00, sseSUB)
 
 DEFINE_SSE_OP(SUBPD, 0x66, sseSUB)
 
-void XEmitter::CMPPS(X64Reg regOp, const OpArg& arg, u8 compare)
-{
-  WriteSSEOp(0x00, sseCMP, regOp, arg, 1);
-  Write8(compare);
-}
-
-void XEmitter::CMPPD(X64Reg regOp, const OpArg& arg, u8 compare)
-{
-  WriteSSEOp(0x66, sseCMP, regOp, arg, 1);
-  Write8(compare);
-}
+DEFINE_SSE_CMP_SHUF_OP(CMPPS, 0x00, sseCMP)
+DEFINE_SSE_CMP_SHUF_OP(CMPPD, 0x66, sseCMP)
 
 DEFINE_SSE_OP(ANDPS, 0x00, sseAND)
 
@@ -231,17 +220,8 @@ DEFINE_SSE_OP(RCPPS, 0x00, sseRCP)
 
 DEFINE_SSE_OP(RSQRTPS, 0x00, sseRSQRT)
 
-void XEmitter::SHUFPS(X64Reg regOp, const OpArg& arg, u8 shuffle)
-{
-  WriteSSEOp(0x00, sseSHUF, regOp, arg, 1);
-  Write8(shuffle);
-}
-
-void XEmitter::SHUFPD(X64Reg regOp, const OpArg& arg, u8 shuffle)
-{
-  WriteSSEOp(0x66, sseSHUF, regOp, arg, 1);
-  Write8(shuffle);
-}
+DEFINE_SSE_CMP_SHUF_OP(SHUFPS, 0x00, sseSHUF)
+DEFINE_SSE_CMP_SHUF_OP(SHUFPD, 0x66, sseSHUF)
 
 DEFINE_SSE_OP(COMISS, 0x00, sseCOMIS)
 
@@ -575,15 +555,5 @@ void XEmitter::PDEP(int bits, X64Reg regOp1, X64Reg regOp2, const OpArg& arg)
 
 }  // namespace Gen
 
-#define DEFINE_SSE_OP(name, prefix, op) \
-  void XEmitter::name(X64Reg regOp, const OpArg& arg) \
-  { \
-    WriteSSEOp(prefix, op, regOp, arg); \
-  }
 
-#define DEFINE_SSE_TO_RM_OP(name, prefix, op) \
-  void XEmitter::name(const OpArg& arg, X64Reg regOp) \
-  { \
-    WriteSSEOp(prefix, op, regOp, arg); \
-  }
 
