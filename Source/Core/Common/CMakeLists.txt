@@ -280,8 +280,7 @@ else()
       x64EmitterGPRMisc.cpp
       x64EmitterOpArg.cpp
       x64EmitterSSE.h
-      x64EmitterSSEFloat.cpp
-      x64EmitterSSEInteger.cpp
+      x64EmitterSSE.cpp
       x64EmitterTypes.h
       x64FPURoundMode.cpp
       x64CPUDetect.cpp

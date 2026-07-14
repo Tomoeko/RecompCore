@@ -356,16 +356,4 @@ void XEmitter::GSOverride()
 
 }  // namespace Gen
 
-#define DEFINE_NORMAL_OP(name, op) \
-  void XEmitter::name(int bits, const OpArg& a1, const OpArg& a2) \
-  { \
-    CheckFlags(); \
-    WriteNormalOp(bits, op, a1, a2); \
-  }
-
-#define DEFINE_MULDIV_OP(name, ext) \
-  void XEmitter::name(int bits, const OpArg& src) \
-  { \
-    WriteMulDivType(bits, src, ext); \
-  }
 

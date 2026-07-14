@@ -403,15 +403,4 @@ FMA4(VFNMSUBSD, 0x7F)
 
 }  // namespace Gen
 
-#define DEFINE_VEX_OP(name, prefix, op, W) \
-  void XEmitter::name(X64Reg regOp1, X64Reg regOp2, const OpArg& arg) \
-  { \
-    WriteVEXOp(prefix, op, regOp1, regOp2, arg, W); \
-  }
-
-#define DEFINE_FMA3_OP(name, op, W) \
-  void XEmitter::name(X64Reg regOp1, X64Reg regOp2, const OpArg& arg) \
-  { \
-    WriteFMA3Op(op, regOp1, regOp2, arg, W); \
-  }
 

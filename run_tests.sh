@@ -106,8 +106,8 @@ echo -e "\n${BLUE}[5/5] Building and running x64 Emitter Unit Tests...${NC}"
 X64_STATUS="Skipped"
 if [ "$(uname)" = "Darwin" ]; then
   mkdir -p build_x64_test
-  if cmake -S . -B build_x64_test -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_LIBS=OFF >/dev/null 2>&1; then
-    if cmake --build build_x64_test --target x64EmitterTestStandalone -j"$NCPU" >/dev/null 2>&1; then
+  if cmake -S . -B build_x64_test -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_LIBS=OFF; then
+    if cmake --build build_x64_test --target x64EmitterTestStandalone -j"$NCPU"; then
       if ./build_x64_test/Binaries/Tests/x64EmitterTestStandalone; then
         X64_STATUS="${GREEN}PASSED${NC}"
       else

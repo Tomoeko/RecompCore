@@ -38,8 +38,7 @@
     <ClCompile Include="Common\x64EmitterBranch.cpp" />
     <ClCompile Include="Common\x64EmitterGPRMisc.cpp" />
     <ClCompile Include="Common\x64EmitterOpArg.cpp" />
-    <ClCompile Include="Common\x64EmitterSSEFloat.cpp" />
-    <ClCompile Include="Common\x64EmitterSSEInteger.cpp" />
+    <ClCompile Include="Common\x64EmitterSSE.cpp" />
     <ClCompile Include="Common\x64FPURoundMode.cpp" />
     <ClCompile Include="Core\DSP\Jit\x64\DSPEmitter.cpp" />
     <ClCompile Include="Core\DSP\Jit\x64\DSPJitArithmetic.cpp" />

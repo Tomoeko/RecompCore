@@ -453,26 +453,6 @@ void XEmitter::IMUL(int bits, X64Reg regOp, const OpArg& a)
   a.WriteRest(this, 0, regOp);
 }
 
-void XEmitter::MOVDQA(X64Reg regOp, const OpArg& arg)
-{
-  WriteSSEOp(0x66, sseMOVDQfromRM, regOp, arg);
-}
-
-void XEmitter::MOVDQA(const OpArg& arg, X64Reg regOp)
-{
-  WriteSSEOp(0x66, sseMOVDQtoRM, regOp, arg);
-}
-
-void XEmitter::MOVDQU(X64Reg regOp, const OpArg& arg)
-{
-  WriteSSEOp(0xF3, sseMOVDQfromRM, regOp, arg);
-}
-
-void XEmitter::MOVDQU(const OpArg& arg, X64Reg regOp)
-{
-  WriteSSEOp(0xF3, sseMOVDQtoRM, regOp, arg);
-}
-
 void XEmitter::SARX(int bits, X64Reg regOp1, const OpArg& arg, X64Reg regOp2)
 {
   WriteBMI2Op(bits, 0xF3, 0x38F7, regOp1, regOp2, arg);
@@ -525,6 +505,16 @@ void XEmitter::BEXTR(int bits, X64Reg regOp1, const OpArg& arg, X64Reg regOp2)
   WriteBMI1Op(bits, 0x00, 0x38F7, regOp1, regOp2, arg);
 }
 
+void XEmitter::PDEP(int bits, X64Reg regOp1, X64Reg regOp2, const OpArg& arg)
+{
+  WriteBMI2Op(bits, 0xF2, 0x38F5, regOp1, regOp2, arg);
+}
+
+void XEmitter::PEXT(int bits, X64Reg regOp1, X64Reg regOp2, const OpArg& arg)
+{
+  WriteBMI2Op(bits, 0xF3, 0x38F5, regOp1, regOp2, arg);
+}
+
 void XEmitter::ANDN(int bits, X64Reg regOp1, X64Reg regOp2, const OpArg& arg)
 {
   WriteBMI1Op(bits, 0x00, 0x38F2, regOp1, regOp2, arg);
@@ -535,30 +525,5 @@ void XEmitter::RDTSC()
   Write8(0x0F);
   Write8(0x31);
 }
-
 }  // namespace Gen
-
-#define DEFINE_MULDIV_OP(name, ext) \
-  void XEmitter::name(int bits, const OpArg& src) \
-  { \
-    WriteMulDivType(bits, src, ext); \
-  }
-
-#define DEFINE_SHIFT_OP(name, ext) \
-  void XEmitter::name(int bits, const OpArg& dest, const OpArg& shift) \
-  { \
-    WriteShift(bits, dest, shift, ext); \
-  }
-
-#define DEFINE_BITTEST_OP(name, ext) \
-  void XEmitter::name(int bits, const OpArg& dest, const OpArg& index) \
-  { \
-    WriteBitTest(bits, dest, index, ext); \
-  }
-
-#define DEFINE_BITSEARCH_OP(name, op) \
-  void XEmitter::name(int bits, X64Reg dest, const OpArg& src) \
-  { \
-    WriteBitSearchType(bits, dest, src, op); \
-  }
 

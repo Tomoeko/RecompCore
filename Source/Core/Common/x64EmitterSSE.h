@@ -89,6 +89,11 @@
   void MOVDQU(X64Reg regOp, const OpArg& arg);
   void MOVDQU(const OpArg& arg, X64Reg regOp);
 
+  // SSE/SSE2: Non-temporal moves
+  void MOVNTDQ(const OpArg& arg, X64Reg regOp);
+  void MOVNTPS(const OpArg& arg, X64Reg regOp);
+  void MOVNTPD(const OpArg& arg, X64Reg regOp);
+
   void MOVSS(X64Reg regOp, const OpArg& arg);
   void MOVSD(X64Reg regOp, const OpArg& arg);
   void MOVSS(const OpArg& arg, X64Reg regOp);
@@ -126,6 +131,10 @@
   // weird one.
   void MASKMOVDQU(X64Reg dest, X64Reg src);
   void LDDQU(X64Reg dest, const OpArg& src);
+
+  // SSE/SSE2: Control/MXCSR registers
+  void STMXCSR(const OpArg& memloc);
+  void LDMXCSR(const OpArg& memloc);
 
   // SSE/SSE2: Data type conversions.
   void CVTPS2PD(X64Reg dest, const OpArg& src);
