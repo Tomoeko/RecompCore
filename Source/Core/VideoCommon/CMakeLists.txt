@@ -174,8 +174,11 @@ add_library(videocommon
   Spirv.h
   Statistics.cpp
   Statistics.h
+  TCacheEntry.cpp
   TextureCacheBase.cpp
   TextureCacheBase.h
+  TextureCacheEFB.cpp
+  TextureCacheRender.cpp
   TextureConfig.cpp
   TextureConfig.h
   TextureConversionShader.cpp
