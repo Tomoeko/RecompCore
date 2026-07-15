@@ -179,6 +179,9 @@ add_library(videocommon
   TextureCacheBase.h
   TextureCacheEFB.cpp
   TextureCacheRender.cpp
+  TextureCacheStructs.h
+  TexturePool.cpp
+  TexturePool.h
   TextureConfig.cpp
   TextureConfig.h
   TextureConversionShader.cpp

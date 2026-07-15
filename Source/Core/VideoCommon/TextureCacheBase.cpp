@@ -61,7 +61,6 @@
 
 static const u64 TEXHASH_INVALID = 0;
 static const int TEXTURE_KILL_THRESHOLD = 64;
-static const int TEXTURE_POOL_KILL_THRESHOLD = 3;
 
 std::unique_ptr<TextureCacheBase> g_texture_cache;
 
@@ -124,7 +123,7 @@ void TextureCacheBase::Invalidate()
   m_textures_by_hash.clear();
   m_textures_by_address.clear();
 
-  m_texture_pool.clear();
+  m_texture_pool.Clear();
 }
 
 void TextureCacheBase::OnConfigChanged(const VideoConfig& config)
@@ -191,23 +190,7 @@ void TextureCacheBase::Cleanup(int _frameCount)
     }
   }
 
-  TexPool::iterator iter2 = m_texture_pool.begin();
-  TexPool::iterator tcend2 = m_texture_pool.end();
-  while (iter2 != tcend2)
-  {
-    if (iter2->second.frameCount == FRAMECOUNT_INVALID)
-    {
-      iter2->second.frameCount = _frameCount;
-    }
-    if (_frameCount > TEXTURE_POOL_KILL_THRESHOLD + iter2->second.frameCount)
-    {
-      iter2 = m_texture_pool.erase(iter2);
-    }
-    else
-    {
-      ++iter2;
-    }
-  }
+  m_texture_pool.Cleanup(_frameCount);
 }
 
 void TextureCacheBase::SetBackupConfig(const VideoConfig& config)
@@ -294,7 +277,7 @@ void TextureCacheBase::SerializeTexture(AbstractTexture* tex, const TextureConfi
   }
 }
 
-std::optional<TextureCacheBase::TexPoolEntry> TextureCacheBase::DeserializeTexture(PointerWrap& p)
+std::optional<TexPoolEntry> TextureCacheBase::DeserializeTexture(PointerWrap& p)
 {
   TextureConfig config;
   p.Do(config);
@@ -305,7 +288,7 @@ std::optional<TextureCacheBase::TexPoolEntry> TextureCacheBase::DeserializeTextu
   if (!p.IsReadMode() || total_size == 0)
     return std::nullopt;
 
-  auto tex = AllocateTexture(config);
+  auto tex = m_texture_pool.Allocate(config);
   if (!tex)
   {
     PanicAlertFmt("Failed to create texture for deserialization");
@@ -1129,7 +1112,7 @@ RcTcacheEntry TextureCacheBase::CreateTextureEntry(
 
 RcTcacheEntry TextureCacheBase::AllocateCacheEntry(const TextureConfig& config)
 {
-  std::optional<TexPoolEntry> alloc = AllocateTexture(config);
+  std::optional<TexPoolEntry> alloc = m_texture_pool.Allocate(config);
   if (!alloc)
     return {};
 
@@ -1138,51 +1121,6 @@ RcTcacheEntry TextureCacheBase::AllocateCacheEntry(const TextureConfig& config)
   cacheEntry->textures_by_hash_iter = m_textures_by_hash.end();
   cacheEntry->id = m_last_entry_id++;
   return cacheEntry;
-}
-
-std::optional<TextureCacheBase::TexPoolEntry>
-TextureCacheBase::AllocateTexture(const TextureConfig& config)
-{
-  TexPool::iterator iter = FindMatchingTextureFromPool(config);
-  if (iter != m_texture_pool.end())
-  {
-    auto entry = std::move(iter->second);
-    m_texture_pool.erase(iter);
-    return std::move(entry);
-  }
-
-  std::unique_ptr<AbstractTexture> texture = g_gfx->CreateTexture(config);
-  if (!texture)
-  {
-    WARN_LOG_FMT(VIDEO, "Failed to allocate a {}x{}x{} texture", config.width, config.height,
-                 config.layers);
-    return {};
-  }
-
-  std::unique_ptr<AbstractFramebuffer> framebuffer;
-  if (config.IsRenderTarget())
-  {
-    framebuffer = g_gfx->CreateFramebuffer(texture.get(), nullptr);
-    if (!framebuffer)
-    {
-      WARN_LOG_FMT(VIDEO, "Failed to allocate a {}x{}x{} framebuffer", config.width, config.height,
-                   config.layers);
-      return {};
-    }
-  }
-
-  INCSTAT(g_stats.num_textures_created);
-  return TexPoolEntry(std::move(texture), std::move(framebuffer));
-}
-
-TextureCacheBase::TexPool::iterator
-TextureCacheBase::FindMatchingTextureFromPool(const TextureConfig& config)
-{
-  auto range = m_texture_pool.equal_range(config);
-  auto matching_iter = std::find_if(range.first, range.second, [](const auto& iter) {
-    return iter.first.IsRenderTarget() || iter.second.frameCount != FRAMECOUNT_INVALID;
-  });
-  return matching_iter != range.second ? matching_iter : m_texture_pool.end();
 }
 
 TextureCacheBase::TexAddrCache::iterator TextureCacheBase::GetTexCacheIter(TCacheEntry* entry)
@@ -1250,8 +1188,7 @@ void TextureCacheBase::ReleaseToPool(TCacheEntry* entry)
   if (!entry->texture)
     return;
   auto config = entry->texture->GetConfig();
-  m_texture_pool.emplace(config,
-                         TexPoolEntry(std::move(entry->texture), std::move(entry->framebuffer)));
+  m_texture_pool.Release(TexPoolEntry(std::move(entry->texture), std::move(entry->framebuffer)), config);
 }
 
 bool TextureCacheBase::CreateUtilityTextures()
@@ -1281,8 +1218,3 @@ bool TextureCacheBase::CreateUtilityTextures()
   return true;
 }
 
-TextureCacheBase::TexPoolEntry::TexPoolEntry(std::unique_ptr<AbstractTexture> tex,
-                                             std::unique_ptr<AbstractFramebuffer> fb)
-    : texture(std::move(tex)), framebuffer(std::move(fb))
-{
-}

@@ -166,7 +166,7 @@ void TextureCacheBase::ScaleTextureCacheEntryTo(RcTcacheEntry& entry, u32 new_wi
   const TextureConfig newconfig(new_width, new_height, 1, entry->GetNumLayers(), 1,
                                 AbstractTextureFormat::RGBA8, AbstractTextureFlag_RenderTarget,
                                 AbstractTextureType::Texture_2DArray);
-  std::optional<TexPoolEntry> new_texture = AllocateTexture(newconfig);
+  std::optional<TexPoolEntry> new_texture = m_texture_pool.Allocate(newconfig);
   if (!new_texture)
   {
     ERROR_LOG_FMT(VIDEO, "Scaling failed due to texture allocation failure");
@@ -179,8 +179,8 @@ void TextureCacheBase::ScaleTextureCacheEntryTo(RcTcacheEntry& entry, u32 new_wi
   entry->framebuffer.swap(new_texture->framebuffer);
 
   auto config = new_texture->texture->GetConfig();
-  m_texture_pool.emplace(
-      config, TexPoolEntry(std::move(new_texture->texture), std::move(new_texture->framebuffer)));
+  m_texture_pool.Release(
+      TexPoolEntry(std::move(new_texture->texture), std::move(new_texture->framebuffer)), config);
 }
 
 RcTcacheEntry TextureCacheBase::DoPartialTextureUpdates(RcTcacheEntry& entry_to_update,

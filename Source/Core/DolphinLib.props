@@ -784,6 +784,8 @@
     <ClInclude Include="VideoCommon\Spirv.h" />
     <ClInclude Include="VideoCommon\Statistics.h" />
     <ClInclude Include="VideoCommon\TextureCacheBase.h" />
+    <ClInclude Include="VideoCommon\TextureCacheStructs.h" />
+    <ClInclude Include="VideoCommon\TexturePool.h" />
     <ClInclude Include="VideoCommon\TextureConfig.h" />
     <ClInclude Include="VideoCommon\TextureConversionShader.h" />
     <ClInclude Include="VideoCommon\TextureConverterShaderGen.h" />
@@ -1461,6 +1463,7 @@
     <ClCompile Include="VideoCommon\TextureCacheBase.cpp" />
     <ClCompile Include="VideoCommon\TextureCacheEFB.cpp" />
     <ClCompile Include="VideoCommon\TextureCacheRender.cpp" />
+    <ClCompile Include="VideoCommon\TexturePool.cpp" />
     <ClCompile Include="VideoCommon\TextureConfig.cpp" />
     <ClCompile Include="VideoCommon\TextureConversionShader.cpp" />
     <ClCompile Include="VideoCommon\TextureConverterShaderGen.cpp" />
