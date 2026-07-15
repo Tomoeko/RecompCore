@@ -125,6 +125,15 @@ void TCacheEntry::SetNotCopy()
   is_xfb_container = false;
 }
 
+void TCacheEntry::SetParameters(u32 addr_, u32 size_in_bytes_, TextureAndTLUTFormat format_, u32 width, u32 height, u32 levels, u64 base_hash_, u64 full_hash_)
+{
+  SetGeneralParameters(addr_, size_in_bytes_, format_, false);
+  SetDimensions(width, height, levels);
+  SetHashes(base_hash_, full_hash_);
+  memory_stride = BytesPerRow();
+  SetNotCopy();
+}
+
 int TCacheEntry::HashSampleSize() const
 {
   if (should_force_safe_hashing)

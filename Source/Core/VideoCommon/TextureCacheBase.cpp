@@ -157,35 +157,38 @@ void TextureCacheBase::OnConfigChanged(const VideoConfig& config)
   SetBackupConfig(config);
 }
 
+bool TextureCacheBase::ShouldKillTexture(const TCacheEntry& entry, int frame_count) const
+{
+  if (entry.frameCount == FRAMECOUNT_INVALID)
+    return false;
+
+  if (frame_count <= TEXTURE_KILL_THRESHOLD + entry.frameCount)
+    return false;
+
+  if (!entry.IsCopy())
+    return true;
+
+  const bool time_to_check = (frame_count - entry.frameCount) % TEXTURE_KILL_THRESHOLD == 1;
+  if (time_to_check && entry.hash != entry.CalculateHash())
+    return true;
+
+  return false;
+}
+
 void TextureCacheBase::Cleanup(int _frameCount)
 {
   TexAddrCache::iterator iter = m_textures_by_address.begin();
-  TexAddrCache::iterator tcend = m_textures_by_address.end();
-  while (iter != tcend)
+  while (iter != m_textures_by_address.end())
   {
-    if (iter->second->frameCount == FRAMECOUNT_INVALID)
+    auto& entry = iter->second;
+    if (entry->frameCount == FRAMECOUNT_INVALID)
     {
-      iter->second->frameCount = _frameCount;
+      entry->frameCount = _frameCount;
       ++iter;
     }
-    else if (_frameCount > TEXTURE_KILL_THRESHOLD + iter->second->frameCount)
+    else if (ShouldKillTexture(*entry, _frameCount))
     {
-      if (iter->second->IsCopy())
-      {
-        if ((_frameCount - iter->second->frameCount) % TEXTURE_KILL_THRESHOLD == 1 &&
-            iter->second->hash != iter->second->CalculateHash())
-        {
-          iter = InvalidateTexture(iter);
-        }
-        else
-        {
-          ++iter;
-        }
-      }
-      else
-      {
-        iter = InvalidateTexture(iter);
-      }
+      iter = InvalidateTexture(iter);
     }
     else
     {
@@ -693,6 +696,25 @@ RcTcacheEntry TextureCacheBase::AllocateAndDecodeStandardTexture(const TextureIn
   return entry;
 }
 
+void TextureCacheBase::DumpTextureIfEnabled(const TCacheEntry& entry, const TextureInfo& texture_info, u32 levels)
+{
+  if (g_ActiveConfig.bDumpTextures && levels > 0)
+  {
+    const std::string basename = texture_info.CalculateTextureName().GetFullName();
+    if (g_ActiveConfig.bDumpBaseTextures)
+    {
+      m_texture_dumper.DumpTexture(*entry.texture, basename, 0, entry.has_arbitrary_mips);
+    }
+    if (g_ActiveConfig.bDumpMipmapTextures)
+    {
+      for (u32 level = 1; level < levels; ++level)
+      {
+        m_texture_dumper.DumpTexture(*entry.texture, basename, level, entry.has_arbitrary_mips);
+      }
+    }
+  }
+}
+
 RcTcacheEntry TextureCacheBase::CreateTextureEntry(
     const TextureCreationInfo& creation_info, const TextureInfo& texture_info,
     const int safety_color_sample_size, VideoCommon::CustomTextureData* custom_texture_data,
@@ -726,20 +748,9 @@ RcTcacheEntry TextureCacheBase::CreateTextureEntry(
     return entry;
 
   const u32 texLevels = no_mips ? 1 : (custom_texture_data ? (u32)custom_texture_data->m_slices[0].m_levels.size() : texture_info.GetLevelCount());
-  if (g_ActiveConfig.bDumpTextures && !skip_texture_dump && texLevels > 0)
+  if (!skip_texture_dump)
   {
-    const std::string basename = texture_info.CalculateTextureName().GetFullName();
-    if (g_ActiveConfig.bDumpBaseTextures)
-    {
-      m_texture_dumper.DumpTexture(*entry->texture, basename, 0, entry->has_arbitrary_mips);
-    }
-    if (g_ActiveConfig.bDumpMipmapTextures)
-    {
-      for (u32 level = 1; level < texLevels; ++level)
-      {
-        m_texture_dumper.DumpTexture(*entry->texture, basename, level, entry->has_arbitrary_mips);
-      }
-    }
+    DumpTextureIfEnabled(*entry, texture_info, texLevels);
   }
 
   const auto iter = m_textures_by_address.emplace(texture_info.GetRawAddress(), entry);
@@ -752,13 +763,9 @@ RcTcacheEntry TextureCacheBase::CreateTextureEntry(
 
   const TextureAndTLUTFormat full_format(texture_info.GetTextureFormat(),
                                          texture_info.GetTlutFormat());
-  entry->SetGeneralParameters(texture_info.GetRawAddress(), texture_info.GetTextureSize(),
-                              full_format, false);
-  entry->SetDimensions(texture_info.GetRawWidth(), texture_info.GetRawHeight(),
-                       texture_info.GetLevelCount());
-  entry->SetHashes(creation_info.base_hash, creation_info.full_hash);
-  entry->memory_stride = entry->BytesPerRow();
-  entry->SetNotCopy();
+  entry->SetParameters(texture_info.GetRawAddress(), texture_info.GetTextureSize(),
+                       full_format, texture_info.GetRawWidth(), texture_info.GetRawHeight(),
+                       texture_info.GetLevelCount(), creation_info.base_hash, creation_info.full_hash);
 
   INCSTAT(g_stats.num_textures_uploaded);
   SETSTAT(g_stats.num_textures_alive, static_cast<int>(m_textures_by_address.size()));
@@ -877,5 +884,14 @@ bool TextureCacheBase::CreateUtilityTextures()
   }
 
   return true;
+}
+
+void TextureCacheBase::FlushStaleBinds()
+{
+  for (u32 i = 0; i < m_bound_textures.size(); i++)
+  {
+    if (!TMEM::IsCached(i))
+      m_bound_textures[i].reset();
+  }
 }
 

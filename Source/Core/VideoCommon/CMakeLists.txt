@@ -183,6 +183,7 @@ add_library(videocommon
   TextureCacheRender.cpp
   TextureCacheState.cpp
   TextureCacheStructs.h
+  TextureCacheXFB.cpp
   TexturePool.cpp
   TexturePool.h
   TextureConfig.cpp

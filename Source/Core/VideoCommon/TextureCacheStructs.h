@@ -202,6 +202,7 @@ struct TCacheEntry
   void SetXfbCopy(u32 stride);
   void SetEfbCopy(u32 stride);
   void SetNotCopy();
+  void SetParameters(u32 addr_, u32 size_in_bytes_, TextureAndTLUTFormat format_, u32 width, u32 height, u32 levels, u64 base_hash_, u64 full_hash_);
 
   bool OverlapsMemoryRange(u32 range_address, u32 range_size) const;
 
