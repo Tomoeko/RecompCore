@@ -258,6 +258,9 @@ if(_M_ARM_64)
     Arm64EmitterArithmetic.cpp
     Arm64EmitterLoadStore.cpp
     Arm64FloatEmitter.cpp
+    Arm64FloatEmitterABI.cpp
+    Arm64FloatEmitterLoadStore.cpp
+    Arm64FloatEmitterArithmetic.cpp
     Arm64Emitter.h
     Arm64EmitterTypes.h
     Arm64FloatEmitter.h

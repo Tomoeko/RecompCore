@@ -8,6 +8,9 @@ namespace Arm64Gen
 {
 class ARM64XEmitter;
 
+float FPImm8ToFloat(u8 bits);
+std::optional<u8> FPImm8FromFloat(float value);
+
 class ARM64FloatEmitter
 {
 public:
