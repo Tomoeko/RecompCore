@@ -44,6 +44,11 @@ class GameTextureAsset;
 class MaterialResource;
 }  // namespace VideoCommon
 
+struct AlignedDeleter
+{
+  void operator()(u8* ptr) const;
+};
+
 class TextureCacheBase
 {
 public:
@@ -120,7 +125,7 @@ protected:
                                    float gamma, bool clamp_top, bool clamp_bottom,
                                    const std::array<u32, 3>& filter_coefficients);
 
-  alignas(16) u8* m_temp = nullptr;
+  std::unique_ptr<u8[], AlignedDeleter> m_temp;
   size_t m_temp_size = 0;
 
 private:
@@ -139,6 +144,30 @@ private:
                                    const TextureInfo& texture_info, int safety_color_sample_size,
                                    VideoCommon::CustomTextureData* custom_texture_data,
                                    bool custom_arbitrary_mipmaps, bool skip_texture_dump);
+
+  void CalculateHashes(const TextureInfo& texture_info, u64& out_base_hash, u64& out_full_hash) const;
+
+  RcTcacheEntry FindCompatibleTextureByAddress(const TextureInfo& texture_info, u64 base_hash, u64 full_hash,
+                                                TexAddrCache::iterator& oldest_entry, int& temp_frameCount);
+
+  RcTcacheEntry FindCompatibleTextureByHash(const TextureInfo& texture_info, u64 full_hash,
+                                            int safety_color_sample_size);
+
+  std::shared_ptr<HiresTexture> LoadCustomHiresTexture(const TextureInfo& texture_info,
+                                                       std::shared_ptr<VideoCommon::CustomTextureData>& custom_texture_data,
+                                                       VideoCommon::CustomAsset::TimeType& load_time,
+                                                       bool& has_arbitrary_mipmaps, bool& skip_texture_dump);
+
+  std::string TriggerGraphicsModActions(const TextureInfo& texture_info);
+
+  RcTcacheEntry AllocateAndDecodeCustomTexture(const TextureConfig& config,
+                                               VideoCommon::CustomTextureData* custom_texture_data,
+                                               bool custom_arbitrary_mipmaps, u32 texLevels);
+
+  RcTcacheEntry AllocateAndDecodeStandardTexture(const TextureInfo& texture_info,
+                                                 const TextureCreationInfo& creation_info,
+                                                 bool& out_has_arbitrary_mips,
+                                                 u32 texLevels, bool skip_texture_dump);
 
   RcTcacheEntry GetXFBFromCache(u32 address, u32 width, u32 height, u32 stride);
 

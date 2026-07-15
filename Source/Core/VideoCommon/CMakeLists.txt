@@ -8,6 +8,8 @@ add_library(videocommon
   AbstractStagingTexture.h
   AbstractTexture.cpp
   AbstractTexture.h
+  ArbitraryMipmapDetector.cpp
+  ArbitraryMipmapDetector.h
   Assets/AssetListener.h
   Assets/CustomAsset.cpp
   Assets/CustomAsset.h
@@ -179,6 +181,7 @@ add_library(videocommon
   TextureCacheBase.h
   TextureCacheEFB.cpp
   TextureCacheRender.cpp
+  TextureCacheState.cpp
   TextureCacheStructs.h
   TexturePool.cpp
   TexturePool.h

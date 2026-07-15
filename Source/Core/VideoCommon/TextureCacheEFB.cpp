@@ -123,8 +123,8 @@ RcTcacheEntry TextureCacheBase::GetXFBTexture(u32 address, u32 width, u32 height
   {
     const u32 decoded_size = width * height * sizeof(u32);
     CheckTempSize(decoded_size);
-    TexDecoder_DecodeXFB(m_temp, src_data, width, height, stride);
-    entry->texture->Load(0, width, height, width, m_temp, decoded_size);
+    TexDecoder_DecodeXFB(m_temp.get(), src_data, width, height, stride);
+    entry->texture->Load(0, width, height, width, m_temp.get(), decoded_size);
   }
 
   // Stitch any VRAM copies into the new RAM copy.
