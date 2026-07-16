@@ -210,6 +210,8 @@ public:
 
   static const u8* Dispatch(JitBase& jit);
   virtual JitBaseBlockCache* GetBlockCache() = 0;
+  virtual JitBase* GetActiveRecompiler() { return this; }
+
 
   virtual void Jit(u32 em_address) = 0;
 

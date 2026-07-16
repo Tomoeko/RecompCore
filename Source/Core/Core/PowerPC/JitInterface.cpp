@@ -316,18 +316,22 @@ void JitInterface::CompileExceptionCheck(ExceptionType type)
   if (!m_jit)
     return;
 
+  JitBase* target_jit = m_jit->GetActiveRecompiler();
+  if (!target_jit)
+    return;
+
   std::unordered_set<u32>* exception_addresses = nullptr;
 
   switch (type)
   {
   case ExceptionType::FIFOWrite:
-    exception_addresses = &m_jit->js.fifoWriteAddresses;
+    exception_addresses = &target_jit->js.fifoWriteAddresses;
     break;
   case ExceptionType::PairedQuantize:
-    exception_addresses = &m_jit->js.pairedQuantizeAddresses;
+    exception_addresses = &target_jit->js.pairedQuantizeAddresses;
     break;
   case ExceptionType::SpeculativeConstants:
-    exception_addresses = &m_jit->js.noSpeculativeConstantsAddresses;
+    exception_addresses = &target_jit->js.noSpeculativeConstantsAddresses;
     break;
   }
 
@@ -342,7 +346,7 @@ void JitInterface::CompileExceptionCheck(ExceptionType type)
       // Check in case the code has been replaced since: do we need to do this?
       const OpType optype =
           PPCTables::GetOpInfo(PowerPC::MMU::HostRead<u32>(guard, ppc_state.pc), ppc_state.pc)
-              ->type;
+               ->type;
       if (optype != OpType::Store && optype != OpType::StoreFP && optype != OpType::StorePS)
         return;
     }
@@ -350,7 +354,7 @@ void JitInterface::CompileExceptionCheck(ExceptionType type)
 
     // Invalidate the JIT block so that it gets recompiled with the external exception check
     // included.
-    m_jit->GetBlockCache()->InvalidateICache(ppc_state.pc, 4, true);
+    target_jit->GetBlockCache()->InvalidateICache(ppc_state.pc, 4, true);
   }
 }
 

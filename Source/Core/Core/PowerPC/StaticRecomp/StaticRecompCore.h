@@ -58,6 +58,8 @@ public:
   bool HandleFault(uintptr_t access_address, SContext* ctx) override { return false; }
 
   JitBaseBlockCache* GetBlockCache() override { return &m_block_cache; }
+  JitBase* GetActiveRecompiler() override { return m_fallback_jit ? m_fallback_jit.get() : this; }
+
   void EraseSingleBlock(const JitBlock& block) override {}
   std::vector<MemoryStats> GetMemoryStats() const override { return {}; }
   std::size_t DisassembleNearCode(const JitBlock& block, std::ostream& stream) const override
