@@ -12,6 +12,8 @@
 
 #if defined(_M_X86_64)
 #include <pmmintrin.h>
+#elif defined(_M_ARM64) || defined(__aarch64__)
+#include <arm_neon.h>
 #endif
 
 #include <fmt/format.h>
@@ -311,6 +313,8 @@ void TextureCacheBase::UninitializeXFBMemory(u8* dst, u32 stride, u32 bytes_per_
 {
 #if defined(_M_X86_64)
   __m128i sixteenBytes = _mm_set1_epi16((s16)(u16)0xFE01);
+#elif defined(_M_ARM64) || defined(__aarch64__)
+  uint16x8_t eightWords = vdupq_n_u16(0xFE01);
 #endif
 
   for (u32 i = 0; i < num_blocks_y; i++)
@@ -321,6 +325,13 @@ void TextureCacheBase::UninitializeXFBMemory(u8* dst, u32 stride, u32 bytes_per_
     while (size >= 16)
     {
       _mm_storeu_si128((__m128i*)rowdst, sixteenBytes);
+      size -= 16;
+      rowdst += 16;
+    }
+#elif defined(_M_ARM64) || defined(__aarch64__)
+    while (size >= 16)
+    {
+      vst1q_u8(rowdst, vreinterpretq_u8_u16(eightWords));
       size -= 16;
       rowdst += 16;
     }
