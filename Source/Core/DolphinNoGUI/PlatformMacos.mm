@@ -162,6 +162,25 @@
 }
 @end
 
+@interface GameView : NSView
+@end
+
+@implementation GameView
+- (BOOL)acceptsFirstResponder
+{
+  return YES;
+}
+- (void)keyDown:(NSEvent*)event
+{
+  // Consume to prevent system warning sound
+}
+- (void)keyUp:(NSEvent*)event
+{
+  // Consume
+}
+@end
+
+
 namespace
 {
 class PlatformMacOS : public Platform
@@ -226,6 +245,11 @@ bool PlatformMacOS::Init()
   }
   m_window_delegate = [[WindowDelegate alloc] init];
   [m_window setDelegate:m_window_delegate];
+
+  GameView* game_view = [[GameView alloc] initWithFrame:m_window_rect];
+  [m_window setContentView:game_view];
+  [m_window makeFirstResponder:game_view];
+
 
   NSTrackingAreaOptions trackingOptions =
       NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways | NSTrackingInVisibleRect;

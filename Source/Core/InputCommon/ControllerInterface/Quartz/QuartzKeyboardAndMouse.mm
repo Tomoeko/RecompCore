@@ -191,6 +191,8 @@ KeyboardAndMouse::Key::Key(CGKeyCode keycode) : m_keycode(keycode), m_name(Keyco
 
 ControlState KeyboardAndMouse::Key::GetState() const
 {
+  if (![NSApp isActive])
+    return 0;
   return CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, m_keycode) != 0;
 }
 
@@ -239,6 +241,13 @@ void KeyboardAndMouse::MainThreadInitialization(void* view)
 
 Core::DeviceRemoval KeyboardAndMouse::UpdateInput()
 {
+  if (![NSApp isActive])
+  {
+    m_cursor.x = 0;
+    m_cursor.y = 0;
+    return Core::DeviceRemoval::Keep;
+  }
+
   NSRect bounds = [m_window_pos_observer frame];
 
   const double window_width = std::max(bounds.size.width, 1.0);
@@ -301,6 +310,8 @@ ControlState KeyboardAndMouse::Cursor::GetState() const
 
 ControlState KeyboardAndMouse::Button::GetState() const
 {
+  if (![NSApp isActive])
+    return 0;
   return CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, m_button) != 0;
 }
 
